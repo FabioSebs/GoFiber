@@ -92,6 +92,8 @@ The Setup() function requires a \*fiber.App type to be passed in the arguement w
 
 ## Handling Requests
 
+### Register
+
 ```go
 package controllers
 
@@ -128,9 +130,11 @@ func Register(c *fiber.Ctx) error {
 
 Lets begin with the Register() Function. This will accept a \*fiber.Ctx object as an arguement. Next we make a map of string key, value pairs. Next to understand this conditional you'll have to know how pointers work. With Go's feature of pointers , we can check if there is an error parsing the data from the context property of fiber (\*fiber.Ctx) and also fill the map (data) simultaneously. Next up we use the *bcrypt* package to encrypt the password so it's not displayed as a raw string in the database. Finally we make our user model and give it the proper fields as the struct we made earlier follows. The next lines create the user table and returns the user in JSON format as a response.
 
-
+### Login
 
 ```go
+const SecretKey = "secret"
+
 func Login(c *fiber.Ctx) error {
 	var data map[string]string
 
@@ -182,5 +186,37 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "success",
 	})
+}
+```
+
+Very similar logic to the Register() function in the beginning. However we use our database local package that holds or DB variable. Our DB variable is an object from the GORM package which allows us to run queries and this case we use .Where() function to find a user with a specific email. We chain .First() to find only one instance of this user and using a pointer we give the value to user. Next we do some error handling for the User Id.
+
+Our second error handling is performed using the .CompareHashAndPassword() function that is going to compare the user password from our database to the password in the HTTP Request body sent from the client. For it to work tho the arguements have to be type casted into a slice of bytes *([]byte)*. If there is an error there will be an error message returned in JSON format.
+
+Next up is our JWT token. We can initialize a claim by using .NewWithClaims() and passing in a signing method and a jwt.StandardClaims{} object. Next we make our token by signing the claim with a secret sting that has to be typecasted into a slice of byte *([]byte)*. If there is an error making this token we will set an internal server error status using fiber and return an error message in JSON. Lastly we will make a cookie using fiber and it's essential to put the Value field as our token we created. A success message will be made if no errors occur, meaning the user is logged in. 
+
+## Get Users
+
+```go
+func User(c *fiber.Ctx) error {
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SecretKey), nil
+	})
+
+	if err != nil {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.User
+
+	database.DB.Where("id=?", claims.Issuer).First(&user)
+
+	return c.JSON(user)
 }
 ```
