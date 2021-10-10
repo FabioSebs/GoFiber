@@ -40,7 +40,7 @@ type User struct {
 	Password string `json:"-" `
 }
 ```
-#### Here we make a simple struct modeling the properties our User. The backtick literals next to the property types are called [Struct Tags](https://www.digitalocean.com/community/tutorials/how-to-use-struct-tags-in-go). In this case the struct tags are used for encoding how the json keys will be displayed.
+Here we make a simple struct modeling the properties our User. The backtick literals next to the property types are called [Struct Tags](https://www.digitalocean.com/community/tutorials/how-to-use-struct-tags-in-go). In this case the struct tags are used for encoding how the json keys will be displayed.
 
 ## Connecting to a MYSQL Database
 
@@ -67,7 +67,7 @@ func Connect() {
 	connection.AutoMigrate(&models.User{})
 }
 ```
-#### [GORM]("https://gorm.io/docs/index.html) is an ORM library that lets us connect to a database, do auto migrations, query data within tables, all without any SQL! The Connect() function establishes a connection to the database and simultaneously creates a schema. 
+[GORM]("https://gorm.io/docs/index.html) is an ORM library that lets us connect to a database, do auto migrations, query data within tables, all without any SQL! The Connect() function establishes a connection to the database and simultaneously creates a schema. 
 
 ## Creating Routes
 
@@ -88,7 +88,7 @@ func Setup(app *fiber.App) {
 
 ```
 
-#### The Setup() function requires a \*fiber.App type to be passed in the arguement which will be passed in *main.go*. Next is specifying the HTTP Requests the server will handle. Lastly within request an endpoint has to be specified, and then a callback function is the next arguement to handle the logic for the request. This will be done in *authControllers.go*
+The Setup() function requires a \*fiber.App type to be passed in the arguement which will be passed in *main.go*. Next is specifying the HTTP Requests the server will handle. Lastly within request an endpoint has to be specified, and then a callback function is the next arguement to handle the logic for the request. This will be done in *authControllers.go*
 
 ## Handling Requests
 
@@ -126,7 +126,7 @@ func Register(c *fiber.Ctx) error {
 }
 ```
 
-#### Lets begin with the Register() Function. This will accept a \*fiber.Ctx object as an arguement. Next we make a map of string key, value pairs. Next to understand this conditional you'll have to know how pointers work. With Go's feature of pointers , we can check if there is an error parsing the data from the context property of fiber (\*fiber.Ctx) and also fill the map (data) simultaneously. Next up we use the *bcrypt* package to encrypt the password so it's not displayed as a raw string in the database. Finally we make our user model and give it the proper fields as the struct we made earlier follows. The next lines create the user table and returns the user in JSON format as a response.
+Lets begin with the Register() Function. This will accept a \*fiber.Ctx object as an arguement. Next we make a map of string key, value pairs. Next to understand this conditional you'll have to know how pointers work. With Go's feature of pointers , we can check if there is an error parsing the data from the context property of fiber (\*fiber.Ctx) and also fill the map (data) simultaneously. Next up we use the *bcrypt* package to encrypt the password so it's not displayed as a raw string in the database. Finally we make our user model and give it the proper fields as the struct we made earlier follows. The next lines create the user table and returns the user in JSON format as a response.
 
 
 
