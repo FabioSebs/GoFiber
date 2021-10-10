@@ -195,7 +195,7 @@ Our second error handling is performed using the .CompareHashAndPassword() funct
 
 Next up is our JWT token. We can initialize a claim by using .NewWithClaims() and passing in a signing method and a jwt.StandardClaims{} object. Next we make our token by signing the claim with a secret sting that has to be typecasted into a slice of byte *([]byte)*. If there is an error making this token we will set an internal server error status using fiber and return an error message in JSON. Lastly we will make a cookie using fiber and it's essential to put the Value field as our token we created. A success message will be made if no errors occur, meaning the user is logged in. 
 
-## Get Users
+## Get User
 
 ```go
 func User(c *fiber.Ctx) error {
@@ -220,3 +220,50 @@ func User(c *fiber.Ctx) error {
 	return c.JSON(user)
 }
 ```
+This function gets the cookie from the one we stored earlier via the name. The .ParseWithClaims() from the jwt package gets the same credentials from the token we made earlier as well. If there's an error we will return an error message in a JSON format. Next thing we will do is extract the claims from the token and use it for our query to find the id that matches the one inside the claims from the jwt token.
+
+## Logout a User
+
+```go
+func Logout(c *fiber.Ctx) error {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	}
+
+	c.Cookie(&cookie)
+
+	return c.JSON(fiber.Map{
+		"message": "success",
+	})
+}
+```
+
+There's actually no way to delete a cookie so instead we set a new cookie overwriting the jwt and set the expiration date to a time in the past. 
+
+## Main.go
+
+```go
+package main
+
+import (
+	"github.com/FabioSebs/GoFiber/backend/database"
+	"github.com/FabioSebs/GoFiber/backend/routes"
+	fiber "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+)
+
+func main() {
+	database.Connect()
+	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowCredentials: true,
+	}))
+	routes.Setup(app)
+	app.Listen(":3000")
+}
+```
+
+Finally the last step is to do all of our local imports and use the functions we have created to get the server up and running. Thank you guys hope this helped a little ! 
